@@ -8,8 +8,11 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
+  console.log('text:   ', text);
+  // console.log('callback:  ', callback);
+  var id = counter.getNextUniqueId(callback);
   items[id] = text;
+  // let promise = new Promise(resolve, reject)
   callback(null, { id, text });
 };
 
@@ -18,7 +21,7 @@ exports.readAll = (callback) => {
   _.each(items, (text, id) => {
     data.push({ id, text });
   });
-  callback(null, data);
+  callback(err, data);
 };
 
 exports.readOne = (id, callback) => {

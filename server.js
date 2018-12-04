@@ -23,6 +23,7 @@ app.post('/todo', (req, res) => {
   Todo.create(req.body.todoText, (err, newTodo) => {
     if (err) {
       res.sendStatus(400);
+      return;
     } else {
       res.status(201).json(newTodo);
     }
