@@ -11,7 +11,6 @@ exports.create = (text, callback) => {
   // console.log('text:   ', text);
   // console.log('callback:  ', callback);
   counter.getNextUniqueId((err, id) => {
-    console.log(id);
     if (err) {
       callback(err);
     } else {
@@ -32,10 +31,13 @@ exports.create = (text, callback) => {
 
 exports.readAll = (callback) => {
   var data = [];
-  _.each(items, (text, id) => {
-    data.push({ id, text });
+  fs.readdir(exports.dataDir, (err, todoList) => {
+    for (var i = 0; i < todoList.length; i ++) {
+      let id = todoList[i].split('.')[0];
+      data.push({ id:id, text:id });
+    }
+    callback(null, data);
   });
-  callback(err, data);
 };
 
 exports.readOne = (id, callback) => {
