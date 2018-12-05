@@ -3,24 +3,21 @@ const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 
-var items = {};
+const Promise = require('bluebird');
+const readFilePromise = Promise.promisify(fs.readFile);
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  // console.log('text:   ', text);
-  // console.log('callback:  ', callback);
   counter.getNextUniqueId((err, id) => {
     if (err) {
       callback(err);
     } else {
       let fileName = exports.dataDir + '/' + id + '.txt';
-      // console.log(fileName);
       fs.writeFile(fileName, text, (err) => {
         if (err) {
           callback(err);
         } else {
-          // counter += 1;
           callback(null, { id, text });
         }
       });
@@ -30,13 +27,22 @@ exports.create = (text, callback) => {
 
 
 exports.readAll = (callback) => {
-  var data = [];
-  fs.readdir(exports.dataDir, (err, todoList) => {
-    for (var i = 0; i < todoList.length; i ++) {
-      let id = todoList[i].split('.')[0];
-      data.push({ id, text:id });
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw ('error reading data folder');
     }
-    callback(null, data);
+    var data = _.map(files, (file) => {
+      var id = path.basename(file, '.txt');
+      var filepath = path.join(exports.dataDir, file);
+      return readFilePromise(filepath).then(fileData => {
+        return {
+          id: id,
+          text: fileData.toString()
+        };
+      });
+    });
+    Promise.all(data)
+      .then(items => callback(null, items), err => callback(err));
   });
 };
 
